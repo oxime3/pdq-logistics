@@ -1,0 +1,3 @@
+num_of_vans=10
+vans_per_zone=2
+num_of_zones=4
