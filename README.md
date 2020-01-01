@@ -27,4 +27,4 @@ Edit the line below, replacing the indicated section with the IP address of the 
 
 3. Run the app.
 
-[Running the app](van_placements.jpg)
+![Running the app](van_placements.jpg =100x20)
