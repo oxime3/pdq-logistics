@@ -1,12 +1,14 @@
 version: '3'
 services:
-  pdq-logistics:
-    build: ./PDQ_API
+  pdq-api:
+    image: oxime/pdq:api
     ports:
       - "5000:5000"
     stdin_open: true
     tty: true
-  pdq-api:
-    build: ./van-module
+  pdq-van-module:
+    image: oxime/pdq:vans
+    stdin_open: true
+    tty: true
     depends_on:
-      - pdq-logistics
+      - pdq-api
