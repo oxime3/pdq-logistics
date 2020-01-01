@@ -76,7 +76,7 @@ supported_areas["suzhou"] = "31.322593,120.410113"
 # The function attempts to find a radius that will allow a maximum drive time of 45 minutes 
 # to anywhere inside the zone from the factory, as per PDQ's requirement. The default area is Suzhou.
 def create_zones(service_area="suzhou", num_of_zones=0, vans_per_zone=0, num_of_vans=0):
-    print("Creating zones. This may take a few minutes...")
+    print("\nCreating zone coordinates in " + service_area + " area. This may take a few minutes...")
     
     zone_center_coords = supported_areas[str(service_area)]
     
@@ -110,7 +110,7 @@ def create_zones(service_area="suzhou", num_of_zones=0, vans_per_zone=0, num_of_
         zone_cnt += 1
         zone_center_coords = dest_string
         
-        print("Ref. point: " ,dest_string)
+        print("\nRef. point: " ,dest_string)
         print("Created ", zone_cnt, " zones.")
         print("-----------------------")
 
@@ -225,7 +225,9 @@ def binary_search(target=60, low=0, high=None, ref_point=None, degrees=None):
 def writeToFiles():
     string_arr = []
     for key in van_dict:
-        string_arr.append(str(van_dict[key]))
+        entry = van_dict[key]
+        if (entry != {}):
+            string_arr.append(str(entry))
     info_string = "|".join(string_arr)
 
     with open('data/truck_coords.txt', 'w+') as f:       

@@ -4,8 +4,8 @@ import logging
 
 # NOTE - the IP address will be different based on the internet connection you are on.
 # localhost been hardcoded only for development purposes for this prototype. 
-post_zone_info_url = "http://localhost:5000/pdq/trucks"
-post_van_coords_url = "http://localhost:5000/pdq/truckstartingcoordinates"
+post_zone_info_url = "http://pdq-api:5000/pdq/trucks"
+post_van_coords_url = "http://pdq-api:5000/pdq/truckstartingcoordinates"
 
 
 def POSTTruckLoc(url, truck_loc_json):
@@ -54,11 +54,12 @@ def main():
 
     json_data_arr = formatCoords(data)
 
-    print("Posting to cloud database...")
+    print("\nPosting to cloud database...")
     for json in json_data_arr:
-        print("POSTING: " + json)
+        print("POSTING: " + str(json))
         res = POSTTruckLoc(post_van_coords_url, json)
         logging.info("SERVER RESPONSE: " + res)
+    print("Success!\nKeep the API running to connect with android app, or ctrl+c to exit.")
   
 main()
 
