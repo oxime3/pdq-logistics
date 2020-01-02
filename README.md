@@ -2,7 +2,10 @@
 Repository for pdq-logistics sub-system 
 
 ## Prerequisites
-- Docker & Docker-compose. The docker engine can be downloaded from their official website at https://www.docker.com/
+- Docker & Docker-compose. Downloaded from their official website at https://www.docker.com/
+
+## Repositories
+This docker hub repository is located at https://hub.docker.com/repository/docker/oxime/pdq
 
 ## Installation
 Clone the repository:
