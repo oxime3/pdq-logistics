@@ -14,6 +14,7 @@ $ git clone https://github.com/oxime3/pdq-logistics.git
 
 2. From the directory containing the `docker-compose.yml` file, run the API and van-module using:
 ```
+$ cd pdq-logistics
 $ docker-compose up
 ```
 
