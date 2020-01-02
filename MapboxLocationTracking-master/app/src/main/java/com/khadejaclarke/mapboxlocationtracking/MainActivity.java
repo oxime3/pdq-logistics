@@ -1,22 +1,23 @@
 package com.khadejaclarke.mapboxlocationtracking;
 
-import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
@@ -54,6 +55,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static com.khadejaclarke.mapboxlocationtracking.utils.APIService.BASE_URL;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.literal;
@@ -100,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GeoJsonSource source;
     private FeatureCollection featureCollection;
 
+    // localhost is set for a default value
+    private String IP_string = "http://localhost";
     private PermissionsManager permissionsManager;
     private LocationComponent locationComponent;
     private boolean isInTrackingMode;
@@ -118,7 +122,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // This contains the MapView in XML and needs to be called after the access token is configured.
         setContentView(R.layout.activity_main);
 
-        System.out.println("ON CREATE***********************************************");
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
@@ -126,7 +129,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(@NonNull MapboxMap mapboxMap) {
-        System.out.println("onmapready***********************************************");
         this.mapboxMap = mapboxMap;
         mapboxMap.setStyle(Style.MAPBOX_STREETS, style -> {
             enableLocationComponent(style);
@@ -134,18 +136,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             LocalizationPlugin localizationPlugin = new LocalizationPlugin(mapView, mapboxMap, style);
 
             try {
-                System.out.println("ONMAPREADY ENTERED***********************************************");
                 localizationPlugin.matchMapLanguageWithDeviceDefault();
             } catch (RuntimeException exception) {
-                Timber.d(TAG, exception.toString() + "ONMAPREADY ERRORRRR*****************************");
+                Timber.d(TAG, exception.toString() + "ONMAPREADY ERROR");
             }
             mapboxMap.addOnMapClickListener(MainActivity.this);
-////            try {
-////                wait(120000);
-////            } catch (InterruptedException e) {
-////                e.printStackTrace();
-//            }
+
             if (flag == false){
+                promp_user_to_setIP("IP address", "Enter the IP address of the computer running th API:\nExample: 192.167.3.132", true);
+
+
                 callAPI();
             }
 
@@ -290,7 +290,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         try {
             loadedStyle.addSource(source);
         }catch (Exception e){
-            System.out.println(e.getMessage());
+
+            System.out.println("SetupSource: " + e.getMessage());
         }
     }
 
@@ -338,7 +339,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      * </p>
      */
     private void setUpInfoWindowLayer(@NonNull Style loadedStyle) {
-        System.out.println("SETUPWINDOWINFO***********************************************");
+
         try {
             loadedStyle.addLayer(new SymbolLayer(CALLOUT_LAYER_ID, GEOJSON_SOURCE_ID)
                     .withProperties(
@@ -357,6 +358,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     /* add a filter to show only when selected feature property is true */
                     .withFilter(eq((get(PROPERTY_SELECTED)), literal(true))));
         }catch (Exception e){
+            System.out.println("IT IS MAYBE HERE");
             e.getMessage();
         }
     }
@@ -370,14 +372,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      * @param screenPoint the point on screen clicked
      */
     private boolean handleClickIcon(PointF screenPoint) {
-        System.out.println("HANDLE CLICK ICON***********************************************");
         List<Feature> features = mapboxMap.queryRenderedFeatures(screenPoint, MARKER_LAYER_ID);
         if (!features.isEmpty()) {
-            System.out.println("HANDLE CLICK FEATURES EMPTY***********************************************");
             String name = features.get(0).getStringProperty(PROPERTY_ID);
             List<Feature> featureList = featureCollection.features();
             if (featureList != null) {
-                System.out.println("FEATURES LIST NOT NULL**********************************************");
                 for (int i = 0; i < featureList.size(); i++) {
                     if (featureList.get(i).getStringProperty(PROPERTY_ID).equals(name)) {
                         if (featureSelectStatus(i)) {
@@ -389,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
             return true;
-        } else {System.out.println("FEATURES EMPTY***********************************************");
+        } else {
             return false;
         }
 
@@ -401,7 +400,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      * @param index the index of selected feature
      */
     private void setSelected(int index) {
-        System.out.println("SET SELECTED***********************************************");
         if (featureCollection.features() != null) {
             Feature feature = featureCollection.features().get(index);
             setFeatureSelectState(feature, true);
@@ -415,7 +413,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      * @param feature the feature to be selected.
      */
     private void setFeatureSelectState(Feature feature, boolean selectedState) {
-        System.out.println("FEATURE SELECT STATE***********************************************");
         if (feature.properties() != null) {
             feature.properties().addProperty(PROPERTY_SELECTED, selectedState);
             refreshSource();
@@ -429,7 +426,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      * @return true if "selected" is true. False if the boolean property is false.
      */
     private boolean featureSelectStatus(int index) {
-        System.out.println("FEATURE SELECT STATUS***********************************************");
         if (featureCollection == null) {
             return false;
         }
@@ -440,7 +436,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      * Invoked when the bitmaps have been generated from a view.
      */
     public void setImageGenResults(HashMap<String, Bitmap> imageMap) {
-        System.out.println("SET IMAGE GEN RESULTS***********************************************");
         if (mapboxMap != null) {
             System.out.println("Mapbox map not null");
             mapboxMap.getStyle(style -> {
@@ -462,17 +457,73 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         System.out.println("PASSED");
     }
 
+    public void promp_user_to_setIP(String title, String message, Boolean dismissable){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setCancelable(false);
+
+// Set up the input
+        final EditText input = new EditText(this);
+        if(dismissable) {
+
+            input.requestFocus();
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
+            builder.setView(input);
+        }
+
+// Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String ip = input.getText().toString();
+                System.out.println("IP: " + ip.isEmpty());
+                if (ip.isEmpty() && dismissable == true){
+                    promp_user_to_setIP("WARNING", "IP address is not set, van locations will not be shown", false);
+
+                } else {
+                    if (ip.isEmpty() == false) {
+                        IP_string = "http://" + ip;
+                    }
+                    Toast.makeText(MainActivity.this, "IP set to " + IP_string, Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+        if(dismissable) {
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                    promp_user_to_setIP("WARNING", "IP address is not set, van locations will not be shown", false);
+                }
+            });
+        }
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                callAPI();
+            }
+        });
+
+        builder.show();
+
+
+    }
+
 
     private void callAPI() {
-        System.out.println("CALL API***********************************************");
         // Build our client, The API we are using is very basic only returning a handful of
         // information, mainly, the current latitude and longitude of the International Space Station.
+        System.out.println("API WAS CALLED");
         Retrofit client = new Retrofit.Builder()
-                .baseUrl(APIService.BASE_URL)
+                .baseUrl(IP_string + BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
         final APIService service = client.create(APIService.class);
+
 
         // A handler is needed to called the API every x amount of seconds.
         handler = new Handler();
